@@ -79,6 +79,8 @@ class Pdi {
         passToCache(service);
         resolve(service);
       }
+    }).catch(err => {
+      reject(err);
     });
   }
 

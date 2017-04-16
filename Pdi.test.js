@@ -178,4 +178,26 @@ describe('Pdi', () => {
     });
   });
 
+  describe('static di', () => {
+    it('should throw an error if setStaticDi is called without a Pdi instance', () => {
+      expect(() => Pdi.setStaticDi('not a Pdi instance'))
+        .toThrow('A Pdi instance is required in order to be set as a static DI');
+    });
+
+    it('should not get any service instance from Pdi.get when no Pdi instance has been set as a static DI', () => {
+      Pdi.get('service').catch(err => {
+        expect(err).toBe('Pdi.get is called while no Pdi instance has been set as a static DI');
+      });
+    });
+
+    it('should create and use a static di', () => {
+      const serviceFactoryMock = jest.fn((...dependencies) => 'test');
+      reqMock.mockImplementationOnce(() => serviceFactoryMock);
+      Pdi.setStaticDi(pdi);
+      return Pdi.get('service').then(service => {
+        expect(service).toBe('test');
+        expect(reqMock).toHaveBeenCalledWith('serviceRoot/service');
+      });
+    })
+  });
 });

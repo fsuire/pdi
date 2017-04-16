@@ -1,13 +1,14 @@
 {
-  "name": "pdi",
-  "version": "0.3.1",
+  "name": "pdi-js",
+  "version": "1.0.0",
   "description": "A simple node.js Promiseful DI",
   "keywords": [
     "DI",
-    "dependecy injector",
+    "dependency injector",
     "ioc",
     "promise",
-    "promiseful"
+    "promiseful",
+    "no dependency"
   ],
   "main": "Pdi",
   "scripts": {

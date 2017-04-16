@@ -53,6 +53,7 @@ describe('Pdi', () => {
   describe('several instances at once', () => {
     const helloFactoryMock = jest.fn((...dependencies) => Promise.resolve('Hello'));
     const worldFactoryMock = jest.fn((...dependencies) => 'World');
+    const errorFactoryMock = jest.fn((...dependencies) => Promise.reject('test error'));
 
     beforeEach(() => {
       reqMock.mockImplementation(() => {
@@ -61,6 +62,8 @@ describe('Pdi', () => {
           return helloFactoryMock;
         } else if (lastCallArgs[0] === 'serviceRoot/other/world') {
           return worldFactoryMock;
+        } else {
+          return errorFactoryMock;
         }
       });
     });
@@ -69,6 +72,12 @@ describe('Pdi', () => {
       return pdi.get(['hello', 'other/world']).then(([hello, world]) => {
         expect(hello).toBe('Hello');
         expect(world).toBe('World');
+      });
+    });
+
+    it('should not get several services instance from an array', () => {
+      return pdi.get(['hello', 'other/world', 'error']).catch(error => {
+        expect(error).toBe('test error');
       });
     });
 
@@ -81,6 +90,22 @@ describe('Pdi', () => {
         expect(world).toBe('World');
       });
     });
+
+    it('should not get several services instance from an object', () => {
+      return pdi.get({
+        hello: 'hello',
+        world: 'other/world',
+        error: 'error'
+      }).catch(error => {
+        expect(error).toBe('test error');
+      });
+    });
+  });
+
+  describe('dependencies', () => {
+    it('should get a service with dependencies', () => {
+
+    })
   });
 
   describe('cache', () => {

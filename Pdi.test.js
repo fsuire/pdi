@@ -103,9 +103,48 @@ describe('Pdi', () => {
   });
 
   describe('dependencies', () => {
-    it('should get a service with dependencies', () => {
+    const errorFactoryMock = jest.fn((...dependencies) => Promise.reject('test error'));
+    const helloFactoryMock = jest.fn((...dependencies) => Promise.resolve('Hello'));
+    const worldFactoryMock = jest.fn((...dependencies) => 'World');
+    const helloWorldFactoryMock = jest.fn(({hello, world}) => `${hello} ${world} !`);
+    helloWorldFactoryMock.dependencies = {
+      hello: 'hello',
+      world: 'other/world'
+    };
+    const helloErrorFactoryMock = jest.fn(({hello, error}) => `${hello} ${error} !`);
+    helloErrorFactoryMock.dependencies = {
+      hello: 'hello',
+      error: 'error'
+    };
 
-    })
+    beforeEach(() => {
+      reqMock.mockImplementation(() => {
+        const lastCallArgs = reqMock.mock.calls[reqMock.mock.calls.length - 1];
+        if (lastCallArgs[0] === 'serviceRoot/hello') {
+          return helloFactoryMock;
+        } else if (lastCallArgs[0] === 'serviceRoot/other/world') {
+          return worldFactoryMock;
+        } else if (lastCallArgs[0] === 'serviceRoot/helloworld') {
+          return helloWorldFactoryMock;
+        } else if (lastCallArgs[0] === 'serviceRoot/helloerror') {
+          return helloErrorFactoryMock;
+        } else {
+          return errorFactoryMock;
+        }
+      });
+    });
+
+    it('should get a service with dependencies', () => {
+      return pdi.get('helloworld').then(service => {
+        expect(service).toEqual('Hello World !');
+      })
+    });
+
+    it('should not get a service with dependencies', () => {
+      return pdi.get('helloerror').catch(error => {
+        expect(error).toEqual('test error');
+      })
+    });
   });
 
   describe('cache', () => {

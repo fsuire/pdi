@@ -1,0 +1,45 @@
+{
+  "name": "pdi",
+  "version": "0.1.0",
+  "description": "A simple node.js Promiseful DI",
+  "keywords": [
+    "DI",
+    "dependecy injector",
+    "ioc",
+    "promise",
+    "promiseful"
+  ],
+  "main": "Pdi",
+  "scripts": {
+    "test": "jest --coverage --watch",
+    "lint": "eslint --fix ."
+  },
+  "jest": {
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "text"
+    ],
+    "verbose": true
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/gevorg/http-auth/blob/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fsuire/pdi.git"
+  },
+  "readmeFilename": "README.md",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "jest": "^19.0.2"
+  }
+}

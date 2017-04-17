@@ -9,6 +9,7 @@ describe('Pdi', () => {
   let pdi;
 
   beforeEach(() => {
+    Pdi.clear();
     pdi = new Pdi('serviceRoot');
     jest.clearAllMocks();
   });
@@ -47,6 +48,21 @@ describe('Pdi', () => {
         expect(error).toBe('test error');
         expect(reqMock).toHaveBeenCalledWith('serviceRoot/service');
       });
+    });
+
+    it('should store a service directly', () => {
+      pdi.set('test/service', 'test service instance');
+      return pdi.get('test/service').then(service => {
+        expect(service).toEqual('test service instance');
+      })
+    });
+
+    it('should not store a service under an already used name', () => {
+      expect(() => {
+        pdi.set('test/service', 'test service instance');
+        pdi.set('test/service', 'test another service instance');
+      })
+      .toThrow('A service with the name "test/service" has already been registered');
     });
   });
 
@@ -198,6 +214,19 @@ describe('Pdi', () => {
         expect(service).toBe('test');
         expect(reqMock).toHaveBeenCalledWith('serviceRoot/service');
       });
-    })
+    });
+
+    it('should set a service instance on the static di', () => {
+      Pdi.setStaticDi(pdi);
+      Pdi.set('service', 'test service');
+      Pdi.get('service').then(service => {
+        expect(service).toEqual('test service');
+      });
+    });
+
+    it('should set a service instance on the static di', () => {
+      expect(() => Pdi.set('test/service', 'test service'))
+        .toThrow('No PDI instance has been set for a static usage, the service "test/service" cannot be created');
+    });
   });
 });

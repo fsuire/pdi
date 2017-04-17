@@ -49,10 +49,14 @@ pdi.get({
   // bar is the result of the service factory described in {your service directory}/bar.js
   // fooBar is the result of the service factory described in {your service directory}/foo/bar.js
 });
+```
 
-// A PDI instance can also be "stored" then be used "statically":
+A PDI instance can also be "stored" then be used "statically":
+```js
 PDI.setStaticDi(pdi);
 PDI.get('bar').then(bar => {});
+
+PDI.clear(); // the PDI instance is not stored anymore (useful for unit testing)
 ```
 
 The services are node.js modules that simply returns a factory function :
@@ -93,4 +97,13 @@ bar.dependencies = {
   fooBar: 'foo/bar'
 };
 module.exports = bar
+```
+
+Eventually, you can directly pass a service instance to the pdi, it will be "stored" as a cached service:
+```js
+const someService = {name: 'some service'};
+pdi.set('some/service', someService);
+pdi.get('some/service').then(service => {
+  // service === someService
+});
 ```

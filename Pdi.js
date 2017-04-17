@@ -63,6 +63,18 @@ class Pdi {
   }
 
   /**
+   * Set a service instance (this service will be "stored" as a cached service)
+   * @param {string} what    The service name
+   * @param {any}    service The service instance
+   */
+  set(what, service) {
+    if(Object.keys(this._cache).indexOf(what) !== -1) {
+      throw new Error(`A service with the name "${what}" has already been registered`);
+    }
+    this._cache[what] = service;
+  }
+
+  /**
    * Set a Pdi instance to be used statically, directly from Pdi
    * @param {Pdi} pdi A Pdi instance
    * @example
@@ -79,6 +91,13 @@ class Pdi {
   }
 
   /**
+   * Remove (if there is one) the statically usable Pdi instance (useful before each test)
+   */
+  static clear() {
+    staticDi = null;
+  }
+
+  /**
    * Get a service instance from a pdi previously registered with Pdi.setStaticDi
    * @param  {string} what The service you want
    * @return {Promise}     A promise that hold the service instance
@@ -92,6 +111,23 @@ class Pdi {
       return staticDi.get(what);
     } else {
       return Promise.reject('Pdi.get is called while no Pdi instance has been set as a static DI');
+    }
+  }
+
+  /**
+   * Set a service instance on the statically usable Pdi instance
+   * @param {string} what    The service name
+   * @param {any}    service The service instance
+   * @example
+   * const pdiInstance = new Pdi(`${__dirname}/service-directory`);
+   * Pdi.setStaticDi(pdiInstance);
+   * Pdi.set('some/service', 'some service instance');
+   */
+  static set(what, service) {
+    if(staticDi instanceof Pdi) {
+      staticDi.set(what, service);
+    } else {
+      throw new Error(`No PDI instance has been set for a static usage, the service "${what}" cannot be created`);
     }
   }
 
@@ -119,7 +155,7 @@ class Pdi {
    * @return {any|undefined}  The cached service instance
    */
   _getInCache(what) {
-    if(typeof this._cache[what] !== 'undefined') {
+    if(Object.keys(this._cache).indexOf(what) !== -1) {
       return this._cache[what];
     }
     return undefined;
@@ -148,7 +184,7 @@ class Pdi {
       const service = serviceFactory(deps);
       const passToCache = serviceInstance => {
         if(serviceFactory.cache) {
-          this._cache[what] = serviceInstance;
+          this.set(what, serviceInstance);
         }
       };
 

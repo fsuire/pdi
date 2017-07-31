@@ -1,14 +1,22 @@
 ## pdi-js
 
-A simple "promiseful" node.js DI
+A simple "promiseful" node.js DI:
+1. Write services as factory functions, one service per file
+2. Create a pdi-js instance by specifying the directory where your services are.
+3. Use the pdi-js to get a service instance (the result of a factory function) by specifying the path of your service (where the root implicitely is the directory we talked about previously)
+4. A pdi-js instance can be created with a "suffix" : only files with this suffix will be considered as service factory
+5. Once a pdi-js instance is created, anything can be added to it and later be retrieved as a service
+
 
 ### Installation
 
 ```
-$ npm install pdi-js
+$ npm install pdi-js --save
 ```
 
-### Exemple
+### Use without suffix
+
+When the service files are located in a dedicated directory, it's convenient to use pdi-js without suffix:
 
 ```js
 const PDI = require('pdi-js');
@@ -18,7 +26,7 @@ const PDI = require('pdi-js');
 /////////////////////
 
 // the argument used for construction points to your service directory
-var myServiceDirectory = __dirname + '/services';
+const myServiceDirectory = __dirname + '/services';
 var pdi = new PDI(myServiceDirectory);
 
 ///////////////////////////////
@@ -51,13 +59,70 @@ pdi.get({
 });
 ```
 
+### Use with a suffix
+
+When the service files are mixed up with other files, just use a suffix, pdi-js will ignore all unsuffixed files.
+
+```js
+const PDI = require('pdi-js');
+
+/////////////////////
+// create a new di //
+/////////////////////
+
+// Let's say your services are mixed up with other files.
+// You have to construct a pdi-js instance pointing to your souce directory.
+const mySourceDirectory = __dirname;
+// Now, we choose a suffix for our service files
+const mySuffix = '.srv';
+var pdi = new PDI(mySourceDirectory, mySuffix);
+
+///////////////////////////////
+// get a service from a file //
+///////////////////////////////
+
+// will use the service file {your source directory}/bar.srv.js
+pdi.get('bar').then(bar => {
+  // bar is the result of the service factory described in {your source directory}/bar.srv.js
+});
+
+// will use the service file {your source directory}/foo/bar.srv.js
+pdi.get('foo/bar').then(bar => {
+  // bar is the result of the service factory described in {your source directory}/foo/bar.srv.js
+});
+
+// will use the files {your source directory}/bar.srv.js and {your source directory}/foo/bar.srv.js
+pdi.get(['bar', 'foo/bar']).then([bar, fooBar] => {
+  // bar is the result of the service factory described in {your source directory}/bar.srv.js
+  // fooBar is the result of the service factory described in {your source directory}/foo/bar.srv.js
+});
+
+// will use the files {your source directory}/bar.srv.js and {your source directory}/foo/bar.srv.js
+pdi.get({
+  bar: 'bar',
+  fooBar: 'foo/bar'
+}).then({bar, fooBar} => {
+  // bar is the result of the service factory described in {your source directory}/bar.srv.js
+  // fooBar is the result of the service factory described in {your source directory}/foo/bar.srv.js
+});
+```
+
+### Statically store a pdi-js instance
+
 A PDI instance can also be "stored" then be used "statically":
 ```js
+const PDI = require('pdi-js');
+const pdi = new PDI(`${__dirname}service/directory`);
 PDI.setStaticDi(pdi);
+
+// Later, in some other file...
+const PDI = require('pdi-js');
 PDI.get('bar').then(bar => {});
 
 PDI.clear(); // the PDI instance is not stored anymore (useful for unit testing)
 ```
+
+### Service files are factory function
 
 The services are node.js modules that simply returns a factory function :
 

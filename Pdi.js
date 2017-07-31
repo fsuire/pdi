@@ -9,18 +9,40 @@ let staticDi;
 class Pdi {
 
   /**
-   * @param  {string} rootPath Path to the services directory
+   * @param  {String} rootPath Path to the services directory
+   * @param  {String} [suffix] When a suffix is used, only file with this suffix are considered as services
    * @example
+   * // Using pdi-js without suffix
    * const pdi = new Pdi(`${__dirname}/service-directory`);
+   * pdi.get('foo').then(service => {
+   *   // service was obtained from the factory in the file {__dirname}/service-directory/foo.js
+   *   return '';
+   * });
+   * pdi.get('bar.service').then(service => {
+   *   // service was obtained from the factory in the file {__dirname}/service-directory/bar.service.js
+   *   return '';
+   * });
+   * @example
+   * // Using pdi-js with a suffix
+   * const pdi = new Pdi(`${__dirname}/service-directory`, '.service');
+   * pdi.get('foo').catch(service => {
+   *   // service was obtained from the factory in the file {__dirname}/service-directory/foo.service.js
+   *   return '';
+   * });
+   * pdi.get('bar.service').then(service => {
+   *   // service was obtained from the factory in the file {__dirname}/service-directory/bar.service.service.js
+   *   return '';
+   * });
    */
-  constructor(rootPath) {
+  constructor(rootPath, suffix = '') {
     this._rootPath = rootPath;
+    this._suffix = suffix;
     this._cache = {};
   }
 
   /**
    * Get a service instance
-   * @param  {string} what The service you want
+   * @param  {String} what The service you want
    * @return {Promise}     A promise that hold the service instance
    * @example
    * // will return the service held by __dirname/service-directory/service.js
@@ -64,7 +86,7 @@ class Pdi {
 
   /**
    * Set a service instance (this service will be "stored" as a cached service)
-   * @param {string} what    The service name
+   * @param {String} what    The service name
    * @param {any}    service The service instance
    */
   set(what, service) {
@@ -99,7 +121,7 @@ class Pdi {
 
   /**
    * Get a service instance from a pdi previously registered with Pdi.setStaticDi
-   * @param  {string} what The service you want
+   * @param  {String} what The service you want
    * @return {Promise}     A promise that hold the service instance
    * @example
    * const pdiInstance = new Pdi(`${__dirname}/service-directory`);
@@ -116,7 +138,7 @@ class Pdi {
 
   /**
    * Set a service instance on the statically usable Pdi instance
-   * @param {string} what    The service name
+   * @param {String} what    The service name
    * @param {any}    service The service instance
    * @example
    * const pdiInstance = new Pdi(`${__dirname}/service-directory`);
@@ -134,7 +156,7 @@ class Pdi {
   /**
    * get only one service
    * @private
-   * @param  {string} what The service you want
+   * @param  {String} what The service you want
    * @return {Promise}     A promise that hold the service instance
    */
   _getOneService(what) {
@@ -151,7 +173,7 @@ class Pdi {
   /**
    * check if there is a cached instance of a service
    * @private
-   * @param  {string} what    The required service
+   * @param  {String} what    The required service
    * @return {any|undefined}  The cached service instance
    */
   _getInCache(what) {
@@ -165,12 +187,12 @@ class Pdi {
    * Will create a service instance, executing the service factory.
    * Will also load dependencies for the required service, and cache the obtained instance if required.
    * @private
-   * @param  {string}   what    The required service
+   * @param  {String}   what    The required service
    * @param  {function} resolve The resolve function, used for the promise that must have called #_createService
    * @param  {function} reject  The resolve function, used for the promise that must have called #_createService
    */
   _createService(what, resolve, reject) {
-    const serviceFactory = req(`${this._rootPath}/${what}`);
+    const serviceFactory = req(`${this._rootPath}/${what}${this._suffix}`);
     let dependencies = Promise.resolve();
 
     if(serviceFactory.dependencies) {

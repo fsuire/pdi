@@ -57,12 +57,31 @@ describe('Pdi', () => {
       })
     });
 
-    it('should not store a service under an already used name', () => {
+    it('should throw an error when caching a service under an already used name - NOT IN the same tick', () => {
+      return new Promise((resolve, reject) => {
+        pdi.set('test/service', 'test service instance');
+        process.nextTick(() => {
+          try {
+            pdi.set('test/service', 'test another service instance');
+            resolve()
+          } catch(error) {
+            reject(error)
+          }
+        })
+      }).then(() => {
+        expect('Well, that promise did not fail, it should have.').toEqual('That promise has failed.')
+      })
+      .catch(e => {
+        expect(e.message).toEqual('A service with the name "test/service" has already been registered')
+      });
+    });
+
+    it('should not throw an error when caching a service under an already used name - IN the same tick', () => {
       expect(() => {
         pdi.set('test/service', 'test service instance');
         pdi.set('test/service', 'test another service instance');
       })
-      .toThrow('A service with the name "test/service" has already been registered');
+      .not.toThrow();
     });
   });
 

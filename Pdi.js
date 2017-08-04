@@ -38,6 +38,8 @@ class Pdi {
     this._rootPath = rootPath;
     this._suffix = suffix;
     this._cache = {};
+    this._cachedInCurrentTick = [];
+    this._cachedInCurrentTick.willBeCleanedOnNextTick = false;
   }
 
   /**
@@ -90,10 +92,21 @@ class Pdi {
    * @param {any}    service The service instance
    */
   set(what, service) {
+    if(this._cachedInCurrentTick.indexOf(what) !== -1) {
+      return;
+    }
     if(Object.keys(this._cache).indexOf(what) !== -1) {
       throw new Error(`A service with the name "${what}" has already been registered`);
     }
     this._cache[what] = service;
+    this._cachedInCurrentTick.push(what)
+    if(!this._cachedInCurrentTick.willBeCleanedOnNextTick) {
+      this._cachedInCurrentTick.willBeCleanedOnNextTick = true;
+      process.nextTick(() => {
+        this._cachedInCurrentTick = [];
+        this._cachedInCurrentTick.willBeCleanedOnNextTick = false;
+      })
+    }
   }
 
   /**

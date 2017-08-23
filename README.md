@@ -14,6 +14,7 @@ A simple "promiseful" node.js DI:
 $ npm install pdi-js --save
 ```
 
+
 ### Use without suffix
 
 When the service files are located in a dedicated directory, it's convenient to use pdi-js without suffix:
@@ -58,6 +59,7 @@ pdi.get({
   // fooBar is the result of the service factory described in {your service directory}/foo/bar.js
 });
 ```
+
 
 ### Use with a suffix
 
@@ -107,6 +109,7 @@ pdi.get({
 });
 ```
 
+
 ### Statically store a pdi-js instance
 
 A PDI instance can also be "stored" then be used "statically":
@@ -121,6 +124,7 @@ PDI.get('bar').then(bar => {});
 
 PDI.clear(); // the PDI instance is not stored anymore (useful for unit testing)
 ```
+
 
 ### Service files are factory function
 
@@ -171,4 +175,33 @@ pdi.set('some/service', someService);
 pdi.get('some/service').then(service => {
   // service === someService
 });
+```
+
+
+### Use a composition
+
+A composition is just a plain old javascript object describing a list of dependency free services.
+It's usefull when we want to initialize several services that will be later used as dependecies.
+A composition is usually used at the initialization time of an application, and get busy with stuff like
+db configuration/connection.
+
+```js
+const composition = {
+  dbConnection: new Promise((resolve) => {
+    const dbConnection = // do stuff here to get a db connection
+    resolve(dbConnection);
+  }),
+  iceCreamFactory: (flavour) => ({ flavour })
+};
+pdi.executeComposition(composition)
+  .then(() => {
+    // ...
+  });
+
+// Now, the services "dbConnection" and "iceCreamFactory" can be used as dependencies or retrived by inversion of control
+pdi.get(['dbConnection', 'iceCreamFactory'])
+  .then(([dbConnection, iceCreamFactory]) => {
+    const myIceCream = iceCreamFactory('strawberry');
+    return dbConnection.executeRequest(/* whatever is needed to save myIceCream into that db */);
+  });
 ```

@@ -97,6 +97,41 @@ class Pdi {
   }
 
   /**
+   * Execute a composition.
+   * @example
+   * const composition = {
+   *   service1: 'service 1 instance',
+   *   service2: new Promise((resolve) => resolve('service 2 instance'))
+   * };
+   * pdi.executeComposition(composition)
+   *   .then(() => {
+   *     return pdi.get(['service1', 'service2'])
+   *   })
+   *   .then(([service1, service2]) => {
+   *     // make use of `service1` and `service2`
+   *   })
+   * @param  {Object} composition
+   * @return {Promise}             will resolve when all services are registered in pdi-js
+   */
+  executeComposition(composition) {
+    const promises = [];
+    Object.keys(composition).forEach((serviceName) => {
+      let service = composition[serviceName];
+      if(service instanceof Promise) {
+        promises.push(new Promise(resolve => {
+          service.then(instance => {
+            this.set(serviceName, instance, true);
+            resolve();
+          })
+        }));
+      } else {
+        this.set(serviceName, service, true);
+      }
+    });
+    return Promise.all(promises);
+  }
+
+  /**
    * Set a Pdi instance to be used statically, directly from Pdi
    * @param {Pdi} pdi A Pdi instance
    * @example

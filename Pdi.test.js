@@ -204,6 +204,24 @@ describe('Pdi', () => {
     });
   });
 
+  describe('composition', () => {
+    it('should execute a composition', () => {
+      const composition = {
+        service1: 'service 1 instance',
+        service2: new Promise((resolve) => resolve('service 2 instance'))
+      };
+
+      return pdi.executeComposition(composition)
+        .then((services) => {
+          return pdi.get(['service1', 'service2'])
+        })
+        .then(([service1, service2]) => {
+          expect(service1).toEqual('service 1 instance')
+          expect(service2).toEqual('service 2 instance')
+        })
+    })
+  })
+
   describe('static di', () => {
     it('should throw an error if setStaticDi is called without a Pdi instance', () => {
       expect(() => Pdi.setStaticDi('not a Pdi instance'))

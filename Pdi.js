@@ -173,16 +173,17 @@ class Pdi {
 
   /**
    * Set a service instance on the statically usable Pdi instance
-   * @param {String} what    The service name
-   * @param {any}    service The service instance
+   * @param {String}  what    The service name
+   * @param {any}     service The service instance
+   * @param {Boolean} force   If true, replace the cached instance (if exists)
    * @example
    * const pdiInstance = new Pdi(`${__dirname}/service-directory`);
    * Pdi.setStaticDi(pdiInstance);
    * Pdi.set('some/service', 'some service instance');
    */
-  static set(what, service) {
+  static set(what, service, force) {
     if(staticDi instanceof Pdi) {
-      staticDi.set(what, service);
+      staticDi.set(what, service, force);
     } else {
       throw new Error(`No PDI instance has been set for a static usage, the service "${what}" cannot be created`);
     }

@@ -256,5 +256,15 @@ describe('Pdi', () => {
       expect(() => Pdi.set('test/service', 'test service'))
         .toThrow('No PDI instance has been set for a static usage, the service "test/service" cannot be created');
     });
+
+    it('should replace an already cached service', () => {
+      Pdi.setStaticDi(pdi);
+      Pdi.set('test/service', 'test service instance');
+      Pdi.set('test/service', 'test another service instance', true);
+      return Pdi.get('test/service').then(service => {
+        expect(service).toEqual('test another service instance');
+        expect(service).not.toEqual('test service instance');
+      })
+    });
   });
 });
